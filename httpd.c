@@ -18,12 +18,36 @@
 #include "common.h"
 #include "auth.h"
 
+#include "tools.h"
+
 static unsigned int myport; /* my port number */
 
 /* Handle one http request. */
 void handle_request (int sock)
 {
-    /* XXXX A compléter */
+	printf("Socket ouvert\n");
+	char* requestLine = read_request(sock);
+	printf("Line read\n");
+	int method;
+	char* filename;
+	
+	parse_request(requestLine, &method, &filename);
+	
+	printf("Requète parsée\n");
+	printf("Nom du fichier à trouver : %s\n", filename);
+
+	if(method != 1){
+		respond400(sock);
+	} else {
+		int file = open(*filename, O_RDONLY);
+		if (file == -1){
+			printf("Pas de ficher\n");
+			respond400(sock);
+		} else {
+			printf("Fichier ouvert\n");
+			respond200(file, sock);
+		}
+	}
 }
 
 
@@ -67,6 +91,16 @@ int main (int argc, char *argv[])
     /* Prépare le socket à la réception de connexions */
     listen (s, 5);
 
-    /* XXXX A compléter */
+	while(1){
+		struct sockaddr peer;
+		socklen_t addrlen = sizeof(struct sockaddr_in);
+		int newSock = accept(s, &peer, &addrlen);
+		if (newSock != -1){  
+			handle_request(newSock);
+			close(newSock);	
+		} else 
+			perror("Socket = -1");
+		
+	}
 }
 
