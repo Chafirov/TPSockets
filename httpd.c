@@ -39,7 +39,7 @@ void handle_request (int sock)
 	if(method != 1){
 		respond400(sock);
 	} else {
-		int file = open(*filename, O_RDONLY);
+		int file = open(filename, O_RDONLY);
 		if (file == -1){
 			printf("Pas de ficher\n");
 			respond400(sock);

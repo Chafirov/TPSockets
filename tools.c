@@ -12,7 +12,7 @@
 void respond200(int file, int socket){
 	char buff[BUFF_SIZE];
 	writef(socket, HEADER200);
-	while(read(file, buff, BUFF_SIZE) != -1){
+	while(read(file, buff, BUFF_SIZE) != 0){
 		printf("%s", buff);
 		writef(socket, buff);
 	}
