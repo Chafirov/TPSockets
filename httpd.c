@@ -20,7 +20,16 @@
 
 #include "tools.h"
 
+#define PATH_TO_FILE "/home/raskolnikov/dev/sockets/"
+
 static unsigned int myport; /* my port number */
+
+void addPath(char** filename){
+	char newFileName[100];
+	strcat(newFileName, PATH_TO_FILE);
+	strcat(newFileName, *filename);
+	*filename = newFileName;
+}
 
 /* Handle one http request. */
 void handle_request (int sock)
@@ -32,7 +41,9 @@ void handle_request (int sock)
 	char* filename;
 	
 	parse_request(requestLine, &method, &filename);
-	
+
+	addPath(&filename);
+
 	printf("Requète parsée\n");
 	printf("Nom du fichier à trouver : %s\n", filename);
 
@@ -48,6 +59,7 @@ void handle_request (int sock)
 			respond200(file, sock);
 		}
 	}
+	close(sock);
 }
 
 
@@ -92,12 +104,13 @@ int main (int argc, char *argv[])
     listen (s, 5);
 
 	while(1){
+
 		struct sockaddr peer;
 		socklen_t addrlen = sizeof(struct sockaddr_in);
 		int newSock = accept(s, &peer, &addrlen);
-		if (newSock != -1){  
-			handle_request(newSock);
-			close(newSock);	
+		if (newSock != -1){
+			pthread_t thread;
+			pthread_create(&thread, NULL, handle_request, newSock);
 		} else 
 			perror("Socket = -1");
 		
