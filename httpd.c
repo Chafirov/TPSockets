@@ -20,16 +20,16 @@
 
 #include "tools.h"
 
-#define PATH_TO_FILE "/home/raskolnikov/dev/sockets/"
+#define N7
+
+#ifndef N7
+#define PATH_TO_FILE           "/home/raskolnikov/dev/sockets/"
+#else
+#define PATH_TO_FILE           "/home/gjolly/2TR/sockets/"
+#endif
 
 static unsigned int myport; /* my port number */
 
-void addPath(char** filename){
-	char newFileName[100];
-	strcat(newFileName, PATH_TO_FILE);
-	strcat(newFileName, *filename);
-	*filename = newFileName;
-}
 
 /* Handle one http request. */
 void handle_request (int sock)
@@ -42,15 +42,17 @@ void handle_request (int sock)
 	
 	parse_request(requestLine, &method, &filename);
 
-	addPath(&filename);
+    printf("Requète parsée\n");
 
-	printf("Requète parsée\n");
-	printf("Nom du fichier à trouver : %s\n", filename);
+    char fullFileName[100] = PATH_TO_FILE;
+    strcat(fullFileName, filename);
+
+    printf("Nom du fichier à trouver : %s\n", fullFileName);
 
 	if(method != 1){
 		respond400(sock);
 	} else {
-		int file = open(filename, O_RDONLY);
+		int file = open(fullFileName, O_RDONLY);
 		if (file == -1){
 			printf("Pas de ficher\n");
 			respond400(sock);
@@ -110,7 +112,7 @@ int main (int argc, char *argv[])
 		int newSock = accept(s, &peer, &addrlen);
 		if (newSock != -1){
 			pthread_t thread;
-			pthread_create(&thread, NULL, handle_request, newSock);
+			pthread_create(&thread, NULL, &handle_request, newSock);
 		} else 
 			perror("Socket = -1");
 		
